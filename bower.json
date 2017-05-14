@@ -1,0 +1,30 @@
+{
+  "name": "angular-input-highlight-directive",
+  "version": "0.5.0",
+  "authors": [
+    "Ardeshir81 <ardeshireo@gmail.com>"
+  ],
+  "description": "Highlight specified words in your input box",
+  "main": "input-highlight.js",
+  "keywords": [
+    "input",
+    "highlight",
+    "angular",
+    "directive",
+    "color",
+    "text",
+	"coloring"
+  ],
+  "license": "GPL-v3.0",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.6.4"
+  }
+}
