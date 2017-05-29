@@ -10,6 +10,7 @@ Highlight specified words in your input box
   	TODO: add 'it does event listening and huge amount of javascript DOM manipulating and styling' 'use it on your own risk'
   	TODO: add 'being laggy on scroll' and 'not capturing anything beyound inline styling' in 'known issues' part
   	TODO: unbind on destroy
+    TODO: add direction to style copier
   	TODO: refactor styling functions so there are some constant styling that needs to be done once, some in the updateKeys(), and all of them in mutation observer
   
   	TODO: use something like this in documentation :
