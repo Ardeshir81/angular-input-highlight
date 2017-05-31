@@ -1,17 +1,17 @@
 /**
  *
- *	written by Ardeshir81 <ardeshireo@gmail.com> https://github.com/Ardeshir81
+ *    written by Ardeshir81 <ardeshireo@gmail.com> https://github.com/Ardeshir81
  *
- *	TODO: add applying DEFAULT_CLASS in documentation
- *	TODO: add 'if you ever faced a problem tell me' 'please' or something like that
- *	TODO: add 'it does event listening and huge amount of javascript DOM manipulating and styling' 'use it on your own risk'
- *	TODO: add 'being laggy on scroll' and 'not capturing anything beyound inline styling' in 'known issues' part
- *	TODO: unbind on destroy TODO: add direction to style copyiong
- *	TODO: refactor styling functions so there are some constant styling that needs to be done once, some in the updateKeys(), and all of them in mutation observer
+ *    TODO: add applying DEFAULT_CLASS in documentation
+ *    TODO: add 'if you ever faced a problem tell me' 'please' or something like that
+ *    TODO: add 'it does event listening and huge amount of javascript DOM manipulating and styling' 'use it on your own risk'
+ *    TODO: add 'being laggy on scroll' and 'not capturing anything beyound inline styling' in 'known issues' part
+ *    TODO: unbind on destroy TODO: add direction to style copyiong
+ *    TODO: refactor styling functions so there are some constant styling that needs to be done once, some in the updateKeys(), and all of them in mutation observer
  *
- *	TODO: use something like this in documentation :
- *			include angular, include'path/to/input-highlight.js' in your 'index.html' or 'whatever.html', inject module 'input-highlight-directive' to your module's dependencies,
- *			and use input-highlight directive in your markup as explained below:
+ *    TODO: use something like this in documentation :
+ *            include angular, include'path/to/input-highlight.js' in your 'index.html' or 'whatever.html', inject module 'input-highlight-directive' to your module's dependencies,
+ *            and use input-highlight directive in your markup as explained below:
  *
  * this directive is applied on an input tag. it could take an object/an array/a string as argument.
  * example:
@@ -40,25 +40,25 @@
  */
 
 angular.module('input-highlight-directive', []);
- 
-angular.module('input-highlight-directive').directive('inputHighlight', function () {
-    
-	var DEFAULT_CLASS = "highlighted";
-	
-	var checkString = function (input) {
-		return (input !== "" && input !== null && input !== undefined);
-	};
 
-	
-	//styling functions
-	var doStyling1 = function (elem, div) {
+angular.module('input-highlight-directive').directive('inputHighlight', function () {
+
+    var DEFAULT_CLASS = "highlighted";
+
+    var checkString = function (input) {
+        return (input !== "" && input !== null && input !== undefined);
+    };
+
+
+    //styling functions
+    var doStyling1 = function (elem, div) {
         //positioning the div as input
         div.style.top = elem.offsetTop + 'px';
         div.style.left = elem.offsetLeft + 'px';
         //div.style.left = parseInt(div.style.left) + (div.scrollLeft - elem.scrollLeft ) + 'px';
         div.style.textIndent = '-' + elem.scrollLeft + 'px';
     };
-	
+
     var doStyling2 = function (elem, div) {
         var inputStyle = getComputedStyle(elem);
         //setting padding
@@ -78,12 +78,15 @@ angular.module('input-highlight-directive').directive('inputHighlight', function
         div.style.borderLeftStyle = inputStyle['border-left-style'];
         div.style.borderLeftWidth = inputStyle['border-left-width'];
 
-		//other stylings
+        //other stylings
         div.style.pointerEvents = "none";
         div.style.fontSize = inputStyle["font-size"];
-		div.style.width = inputStyle['width'];
+        div.style.width = inputStyle['width'];
+        div.style.height = inputStyle['height'];
         div.style.fontFamily = inputStyle["font-family"];
         div.style.lineHeight = inputStyle["line-height"];
+        div.style.direction = inputStyle['direction'];
+        div.style.float = inputStyle['float'];
         if (inputStyle["zIndex"]) {
             div.style.zIndex = inputStyle["zIndex"];
         }
@@ -101,9 +104,12 @@ angular.module('input-highlight-directive').directive('inputHighlight', function
             //initializing variables
             var keywords;
             var result = document.createElement("span"); //this is where the fake text will be put in
+            //result.style.textIndent = 0;
+            result.style.display = "block";
+            result.style.overflow = "hidden";
             var div = document.createElement("div"); //this is a wrapper around where the fake text will be put in, so it will handle overflowing
-			
-			//TODO: maybe move these into a seperate function
+
+            //TODO: maybe move these into a seperate function
             div.style.position = "absolute";
             div.style.display = "inline-block";
             div.style.whiteSpace = "nowrap";
@@ -135,12 +141,13 @@ angular.module('input-highlight-directive').directive('inputHighlight', function
             function updateKeys() {
                 var txt = elem[0].value;
                 angular.forEach(keywords, function (value, key) {
-                    txt = txt.replace(new RegExp(key, "g"), "<span class='" + value + "'>" + key + "</span>");
+                    if (key.length > 1) txt = txt.replace(new RegExp(key, "g"), "<span class='" + value + "'>" + key + "</span>");
+                    else txt = txt.replace(new RegExp('[' + key + ']', "g"), "<span class='" + value + "'>" + key + "</span>");
                 });
-				
-				//fixing positioning
+
+                //fixing positioning
                 doStyling1(elem[0], div);
-				
+
                 result.innerHTML = txt;
 
                 //styling2
