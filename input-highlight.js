@@ -43,24 +43,22 @@ angular.module('input-highlight-directive', []);
 
 angular.module('input-highlight-directive').directive('inputHighlight', function () {
 
-    var DEFAULT_CLASS = "highlighted";
+    let DEFAULT_CLASS = "highlighted";
 
-    var checkString = function (input) {
+    let checkString = function (input) {
         return (input !== "" && input !== null && input !== undefined);
     };
 
-
     //styling functions
-    var doStyling1 = function (elem, div) {
+    let doStyling1 = function (elem, div) {
         //positioning the div as input
         div.style.top = elem.offsetTop + 'px';
         div.style.left = elem.offsetLeft + 'px';
         //div.style.left = parseInt(div.style.left) + (div.scrollLeft - elem.scrollLeft ) + 'px';
         div.style.textIndent = '-' + elem.scrollLeft + 'px';
     };
-
-    var doStyling2 = function (elem, div) {
-        var inputStyle = getComputedStyle(elem);
+    let doStyling2 = function (elem, div) {
+        let inputStyle = getComputedStyle(elem);
         //setting padding
         div.style.paddingTop = inputStyle['padding-top'];
         div.style.paddingLeft = inputStyle['padding-left'];
@@ -97,17 +95,17 @@ angular.module('input-highlight-directive').directive('inputHighlight', function
 
     return {
         restrict: 'A',
-        bind: {
-            inputHighlight: '='
+        scope: {
+            inputHighlight: '=',
+            escapeCharacter: '='
         },
         link: function (scope, elem, attr) {
             //initializing variables
-            var keywords;
-            var result = document.createElement("span"); //this is where the fake text will be put in
-            //result.style.textIndent = 0;
+            let result = document.createElement("span"); //this is where the fake text will be put in
             result.style.display = "block";
+            let keywords = {};
             result.style.overflow = "hidden";
-            var div = document.createElement("div"); //this is a wrapper around where the fake text will be put in, so it will handle overflowing
+            let div = document.createElement("div"); //this is a wrapper around where the fake text will be put in, so it will handle overflowing
 
             //TODO: maybe move these into a seperate function
             div.style.position = "absolute";
@@ -121,9 +119,8 @@ angular.module('input-highlight-directive').directive('inputHighlight', function
             //styling 1
             doStyling1(elem[0], div);
 
-            //binding and watching changes
+            //binding and watching changes of attributes
             scope.$watchCollection(attr.inputHighlight, function (newValue) { //there could be a 2nd argument oldValue
-                keywords = {};
                 if (angular.isArray(newValue)) {
                     angular.forEach(newValue, function (keyword) {
                         keywords[keyword] = DEFAULT_CLASS;
@@ -135,31 +132,48 @@ angular.module('input-highlight-directive').directive('inputHighlight', function
                 }
                 updateKeys();
             });
-            elem.bind("input keyup", updateKeys);
+
+            let bindedEvents = elem.bind('blur change focus focusin focusout keydown keypress keyup select drag dragend dragleave input drop', updateKeys);
 
             //main method of angular input highlight directive that updates the dom
-            function updateKeys() {
-                var txt = elem[0].value;
+            function updateKeys(e) {
+
+                //phase 1 of 3 : initializing
+                let escape = attr.escapeCharacter;
+                let txt = elem[0].value;
                 angular.forEach(keywords, function (value, key) {
-                    if (key.length > 1) txt = txt.replace(new RegExp(key, "g"), "<span class='" + value + "'>" + key + "</span>");
-                    else txt = txt.replace(new RegExp('[' + key + ']', "g"), "<span class='" + value + "'>" + key + "</span>");
+                    if (key.length > 1) {
+                        txt = txt.replace(new RegExp(key, "g"), "<span class='" + value + "'>" + key + "</span>");
+                    }
+                    else {
+                        if (!escape) {
+                            txt = txt.replace(new RegExp('[' + key + ']', "g"), "<span class='" + value + "'>" + key + "</span>");
+                        }
+                        else {
+                            //txt = txt.replace(new RegExp('[^' + escape + '][' + key + ']', "g"), "<span class='" + value + "'>" + key + "</span>");
+                            txt = txt.replace(new RegExp(key + '(?!' + escape + ')', "g"), "<span class='" + value + "'>" + key + "</span>");
+                        }
+                    }
+
                 });
-
-                //fixing positioning
-                doStyling1(elem[0], div);
-
                 result.innerHTML = txt;
 
-                //styling2
+                //phase 2 of 3: stylizing
+                doStyling1(elem[0], div);
                 doStyling2(elem[0], div);
+                if (e) {
+                    if (e.type === "blur") {
+                        div.style.textIndent = 0;
+                    }
+                }
 
                 //watching input inline style changes
-                //TODO: cant watch stylesheet style changes, or anything else beside inline style
-                var observer = new MutationObserver(function (mus) {
+                //TODO: cant watch stylesheet style changes, or anything else beyond inline style
+                let observer = new MutationObserver(function (mus) {
                     doStyling1(elem[0], div);
                     doStyling2(elem[0], div);
                 });
-                var mutWatchObject = {
+                let mutWatchObject = {
                     childList: true,
                     attributes: true,
                     characterData: true,
@@ -170,6 +184,11 @@ angular.module('input-highlight-directive').directive('inputHighlight', function
                 };
                 observer.observe(elem[0], mutWatchObject);
             }
+
+            //phase 3 of 3:finalizing
+            scope.$on('$destroy', function () {
+                bindedEvents.unbind();
+            })
         }
     };
 });
