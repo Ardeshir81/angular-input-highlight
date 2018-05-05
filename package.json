@@ -1,6 +1,6 @@
 {
-  "name": "angular-input-highlight",
-  "version": "1.0.0",
+  "name": "angularjs-input-highlight",
+  "version": "0.5.0",
   "description": "Highlight specified words in your input box",
   "main": "index.js",
   "scripts": {
